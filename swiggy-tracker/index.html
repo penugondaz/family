@@ -1,6 +1,102 @@
-function doGet(e) {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Instamart Deal Hunter</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;min-height:100vh}
+.wrap{max-width:960px;margin:0 auto;padding:1.5rem 1rem}
+h1{font-size:22px;font-weight:600;margin-bottom:3px}
+.sub{font-size:13px;color:#888;margin-bottom:1.25rem}
+.config-box{background:#fff;border:1px solid #e0dfd8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.config-box h2{font-size:14px;font-weight:600;margin-bottom:12px;color:#444}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px}
+.field label{font-size:12px;color:#666;font-weight:500}
+.field input,.field select{height:36px;padding:0 10px;border:1px solid #d0cfc8;border-radius:6px;background:#fafaf8;color:#1a1a18;font-size:14px;width:100%}
+.field input:focus,.field select:focus{outline:none;border-color:#4a7fc1}
+.btn{height:36px;padding:0 18px;border-radius:6px;border:1px solid #d0cfc8;background:#fff;color:#1a1a18;font-size:14px;cursor:pointer;font-weight:500;transition:background 0.15s}
+.btn:hover{background:#f5f5f0}
+.btn:active{transform:scale(0.98)}
+.btn-go{background:#1a7a4a;color:#fff;border-color:#1a7a4a;padding:0 24px}
+.btn-go:hover{background:#156040}
+.btn-go:disabled{background:#aaa;border-color:#aaa;cursor:not-allowed;transform:none}
+.categories{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cat-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid #d0cfc8;border-radius:20px;font-size:12px;cursor:pointer;background:#fff;color:#444;user-select:none;transition:all 0.15s}
+.cat-chip.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a}
+.cat-chip input{display:none}
+.filter-bar{background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:12px 16px;margin-bottom:1rem;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.filter-bar label{font-size:12px;color:#666;white-space:nowrap}
+.filter-bar input[type=range]{accent-color:#1a7a4a;flex:1;min-width:120px}
+.disc-label{font-size:14px;font-weight:700;color:#1a7a4a;min-width:44px}
+.sort-sel{height:32px;padding:0 8px;border:1px solid #d0cfc8;border-radius:6px;font-size:13px;background:#fff}
+.progress-wrap{margin-bottom:1rem}
+.progress-bar-bg{background:#e0dfd8;border-radius:4px;height:6px;overflow:hidden}
+.progress-bar-fg{background:#1a7a4a;height:6px;border-radius:4px;transition:width 0.3s}
+.progress-text{font-size:12px;color:#888;margin-top:4px}
+.stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem}
+.stat{background:#fff;border:1px solid #e0dfd8;border-radius:8px;padding:8px 14px;font-size:12px;color:#666}
+.stat b{font-size:18px;font-weight:700;color:#1a1a18;display:block}
+.results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:10px}
+.card{background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:11px;position:relative}
+.card-img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:6px;background:#f5f5f0;display:block;margin-bottom:8px}
+.card-img-ph{width:100%;aspect-ratio:1;background:#f5f5f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:8px;color:#ccc}
+.card-cat{font-size:10px;color:#aaa;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.5px}
+.card-name{font-size:12.5px;font-weight:500;line-height:1.4;margin-bottom:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-qty{font-size:11px;color:#aaa;margin-bottom:6px}
+.price-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.price-now{font-size:13px;font-weight:700}
+.price-mrp{font-size:11px;color:#bbb;text-decoration:line-through}
+.badge{font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px}
+.badge-green{background:#e6f7ee;color:#1a7a4a}
+.badge-orange{background:#fff0e0;color:#c45000}
+.badge-red{background:#fde8e8;color:#c00}
+.badge-demo{background:#fff0e0;color:#c45000;font-size:10px;padding:1px 5px;border-radius:3px;vertical-align:middle}
+.empty{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px;grid-column:1/-1}
+.info{background:#e8f4fb;border:1px solid #b5d4f0;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#1a4f9c;margin-bottom:1rem;line-height:1.6}
+.warn{background:#fffbe6;border:1px solid #f0d070;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#7a5800;margin-bottom:1rem;line-height:1.6;display:none}
+.log-box{background:#f5f5f0;border:1px solid #e0dfd8;border-radius:6px;padding:8px 12px;font-size:11px;color:#888;font-family:monospace;max-height:80px;overflow-y:auto;margin-bottom:1rem;display:none}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid #ddd;border-top-color:#1a7a4a;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gas-box{background:#f0f8f0;border:1px solid #a0d8b0;border-radius:8px;padding:12px 16px;font-size:12.5px;color:#1a4a2a;margin-bottom:1rem;line-height:1.8;display:none}
+.gas-box pre{background:#fff;border:1px solid #c0e0c8;border-radius:4px;padding:10px;font-size:11px;overflow-x:auto;margin-top:8px}
+@media(max-width:500px){.results-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛒 Instamart Deal Hunter</h1>
+  <p class="sub">Scans products across all categories and surfaces the best discounts</p>
+
+  <div class="info">
+    <strong>How it works:</strong> Searches Instamart across 30+ category keywords in parallel, collects all products, deduplicates, then sorts by discount %. No single search term needed — broad coverage across the full catalog. Needs a CORS proxy to fetch live data (see setup below).
+  </div>
+
+  <div class="config-box">
+    <h2>Location &amp; proxy</h2>
+    <div class="row">
+      <div class="field" style="max-width:160px">
+        <label>Latitude</label>
+        <input type="text" id="lat" value="19.0760" placeholder="19.0760"/>
+      </div>
+      <div class="field" style="max-width:160px">
+        <label>Longitude</label>
+        <input type="text" id="lng" value="72.8777" placeholder="72.8777"/>
+      </div>
+      <div class="field">
+        <label>GAS Proxy URL (optional — for live data)</label>
+        <input type="text" id="gasProxy" placeholder="https://script.google.com/macros/s/YOUR_ID/exec"/>
+      </div>
+      <button class="btn" onclick="toggleGas()" style="height:36px;white-space:nowrap;font-size:12px">GAS setup ▾</button>
+    </div>
+    <div class="gas-box" id="gasBox">
+      <strong>Google Apps Script proxy — paste into script.google.com → Deploy as Web App → Anyone:</strong>
+      <pre>function doGet(e) {
   var url = e.parameter.url;
-  var response = UrlFetchApp.fetch(url, {
+  if (!url) return ContentService.createTextOutput('{"error":"no url"}');
+  var resp = UrlFetchApp.fetch(url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
       'Accept': 'application/json',
@@ -9,6 +105,347 @@ function doGet(e) {
     muteHttpExceptions: true
   });
   return ContentService
-    .createTextOutput(response.getContentText())
+    .createTextOutput(resp.getContentText())
     .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+      Copy the deployment URL → paste above → click Scan.
+    </div>
+  </div>
+
+  <div class="config-box">
+    <h2>Categories to scan</h2>
+    <div class="categories" id="catList"></div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-bottom:1rem;flex-wrap:wrap;align-items:center">
+    <button class="btn btn-go" id="scanBtn" onclick="startScan()">▶ Scan all categories</button>
+    <button class="btn" onclick="stopScan()" id="stopBtn" style="display:none">⏹ Stop</button>
+    <button class="btn" onclick="exportCsv()" id="exportBtn" style="display:none;font-size:12px">⬇ Export CSV</button>
+    <span id="scanStatus" style="font-size:13px;color:#888"></span>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap" style="display:none">
+    <div class="progress-bar-bg"><div class="progress-bar-fg" id="progBar" style="width:0%"></div></div>
+    <div class="progress-text" id="progText">0 / 0 categories scanned</div>
+  </div>
+
+  <div class="log-box" id="logBox"></div>
+  <div class="warn" id="warnBox"></div>
+
+  <div class="filter-bar" id="filterBar" style="display:none">
+    <label>Min discount:</label>
+    <input type="range" id="discSlider" min="0" max="90" step="5" value="0" oninput="onSlider(this.value)"/>
+    <span class="disc-label" id="discLabel">0%+</span>
+    <label style="margin-left:8px">Sort:</label>
+    <select class="sort-sel" id="sortSel" onchange="renderFiltered()">
+      <option value="disc_desc">Discount: high → low</option>
+      <option value="price_asc">Price: low → high</option>
+      <option value="price_desc">Price: high → low</option>
+      <option value="name_asc">Name: A → Z</option>
+    </select>
+    <label style="margin-left:8px">Category:</label>
+    <select class="sort-sel" id="catFilter" onchange="renderFiltered()">
+      <option value="">All categories</option>
+    </select>
+  </div>
+
+  <div class="stats-row" id="statsRow" style="display:none"></div>
+  <div class="results-grid" id="results"></div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const CATEGORIES = [
+  {label:'🥛 Dairy', terms:['milk','curd','paneer','butter','ghee','cheese']},
+  {label:'🥦 Vegetables', terms:['onion','tomato','potato','vegetables']},
+  {label:'🍎 Fruits', terms:['apple','banana','mango','fruit']},
+  {label:'🍚 Staples', terms:['rice','atta','dal','pulses','sugar','salt']},
+  {label:'🍪 Snacks', terms:['chips','biscuit','namkeen','cookies','wafers']},
+  {label:'🥤 Beverages', terms:['juice','cold drink','water','tea','coffee','energy drink']},
+  {label:'🧴 Personal Care', terms:['shampoo','soap','facewash','toothpaste','deodorant']},
+  {label:'🧹 Household', terms:['detergent','dishwash','floor cleaner','toilet cleaner']},
+  {label:'🍜 Instant Food', terms:['noodles','pasta','poha','upma','oats','cornflakes']},
+  {label:'🧊 Frozen', terms:['frozen peas','ice cream','frozen snacks']},
+  {label:'🍫 Chocolates', terms:['chocolate','candy','sweets']},
+  {label:'🫙 Masala', terms:['masala','spices','pickle','sauce','ketchup']},
+  {label:'👶 Baby', terms:['baby food','diapers','baby wipes']},
+  {label:'🐾 Pet', terms:['dog food','cat food','pet care']},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let allProducts = new Map(); // id → product
+let scanning = false;
+let stopRequested = false;
+let isDemo = false;
+let totalTerms = 0;
+let doneTerms = 0;
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function initCategories() {
+  const el = document.getElementById('catList');
+  CATEGORIES.forEach((cat, i) => {
+    const chip = document.createElement('label');
+    chip.className = 'cat-chip active';
+    chip.innerHTML = `<input type="checkbox" checked value="${i}"> ${cat.label}`;
+    chip.querySelector('input').addEventListener('change', function() {
+      chip.classList.toggle('active', this.checked);
+    });
+    el.appendChild(chip);
+  });
 }
+
+function getSelectedCategories() {
+  return [...document.querySelectorAll('#catList input:checked')]
+    .map(inp => CATEGORIES[parseInt(inp.value)]);
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function log(msg) {
+  const box = document.getElementById('logBox');
+  box.style.display = 'block';
+  box.innerHTML += msg + '\n';
+  box.scrollTop = box.scrollHeight;
+}
+
+function setProgress(done, total) {
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progText').textContent = `${done} / ${total} keywords scanned · ${allProducts.size} products found`;
+}
+
+function onSlider(val) {
+  document.getElementById('discLabel').textContent = val + '%+';
+  renderFiltered();
+}
+
+function toggleGas() {
+  const b = document.getElementById('gasBox');
+  b.style.display = b.style.display === 'none' ? 'block' : 'none';
+}
+
+function stopScan() {
+  stopRequested = true;
+  document.getElementById('stopBtn').disabled = true;
+}
+
+// ── FETCH ────────────────────────────────────────────────────────────────────
+async function fetchCategory(term, lat, lng, gasProxy) {
+  const swiggyUrl = `https://www.swiggy.com/mapi/instamart/search?pageNumber=0&searchResultsOffset=0&limit=40&query=${encodeURIComponent(term)}&ageConsent=false&includeOutOfStock=false&lat=${lat}&lng=${lng}`;
+  const proxyUrl = gasProxy
+    ? `${gasProxy}?url=${encodeURIComponent(swiggyUrl)}`
+    : `https://corsproxy.io/?url=${encodeURIComponent(swiggyUrl)}`;
+
+  const res = await fetch(proxyUrl, {signal: AbortSignal.timeout(8000)});
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+
+  let products = [];
+  const widgets = data?.data?.widgets || [];
+  for (const w of widgets) {
+    products.push(...(w?.data?.products || w?.data?.productList || w?.data?.items || []));
+  }
+  if (!products.length) products = data?.data?.products || data?.data?.searchResult?.products || [];
+  return products;
+}
+
+function parseProduct(raw, categoryLabel) {
+  const mrp = parseFloat(raw.mrp || raw.price?.mrp || raw.totalMrp || 0);
+  const price = parseFloat(raw.price?.offerPrice || raw.offerPrice || raw.discountedPrice || raw.price?.value || mrp);
+  if (!price || price <= 0) return null;
+  const disc = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+  const id = raw.id || raw.productId || (raw.name + price);
+  return { id: String(id), name: raw.name || raw.productName || 'Product', qty: raw.quantity || raw.packSize || raw.weight || '', mrp, price, disc, img: raw.images?.[0]?.url || raw.imageUrl || raw.image || '', category: categoryLabel };
+}
+
+// ── SCAN ─────────────────────────────────────────────────────────────────────
+async function startScan() {
+  if (scanning) return;
+  scanning = true;
+  stopRequested = false;
+  isDemo = false;
+  allProducts.clear();
+
+  const lat = document.getElementById('lat').value.trim() || '19.0760';
+  const lng = document.getElementById('lng').value.trim() || '72.8777';
+  const gasProxy = document.getElementById('gasProxy').value.trim();
+  const cats = getSelectedCategories();
+
+  if (!cats.length) { alert('Select at least one category'); scanning = false; return; }
+
+  const allTerms = cats.flatMap(c => c.terms.map(t => ({term: t, label: c.label})));
+  totalTerms = allTerms.length;
+  doneTerms = 0;
+
+  document.getElementById('scanBtn').disabled = true;
+  document.getElementById('stopBtn').style.display = 'inline-block';
+  document.getElementById('progressWrap').style.display = 'block';
+  document.getElementById('filterBar').style.display = 'none';
+  document.getElementById('statsRow').style.display = 'none';
+  document.getElementById('logBox').innerHTML = '';
+  document.getElementById('warnBox').style.display = 'none';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('exportBtn').style.display = 'none';
+  setProgress(0, totalTerms);
+
+  let blockedCount = 0;
+
+  // Process in batches of 3 (polite crawl rate)
+  for (let i = 0; i < allTerms.length; i += 3) {
+    if (stopRequested) break;
+    const batch = allTerms.slice(i, i + 3);
+    await Promise.all(batch.map(async ({term, label}) => {
+      try {
+        const raw = await fetchCategory(term, lat, lng, gasProxy);
+        raw.forEach(r => {
+          const p = parseProduct(r, label);
+          if (p && !allProducts.has(p.id)) allProducts.set(p.id, p);
+        });
+        log(`✓ "${term}" → ${raw.length} products`);
+      } catch(e) {
+        blockedCount++;
+        log(`✗ "${term}" → ${e.message}`);
+      }
+      doneTerms++;
+      setProgress(doneTerms, totalTerms);
+    }));
+    // Small delay between batches
+    if (!stopRequested) await new Promise(r => setTimeout(r, 400));
+  }
+
+  scanning = false;
+  document.getElementById('scanBtn').disabled = false;
+  document.getElementById('stopBtn').style.display = 'none';
+
+  if (allProducts.size === 0) {
+    // All blocked — load demo
+    const w = document.getElementById('warnBox');
+    w.style.display = 'block';
+    w.innerHTML = '<strong>Live API blocked (CORS/bot detection).</strong> Showing demo data. Add a Google Apps Script proxy URL above and rescan for live results.';
+    loadDemo();
+  } else {
+    if (blockedCount > 0) {
+      const w = document.getElementById('warnBox');
+      w.style.display = 'block';
+      w.innerHTML = `${blockedCount} keywords were blocked. ${allProducts.size} products loaded from the rest. Add a GAS proxy for full coverage.`;
+    }
+    populateCatFilter();
+    document.getElementById('filterBar').style.display = 'flex';
+    document.getElementById('exportBtn').style.display = 'inline-block';
+    renderFiltered();
+  }
+}
+
+// ── DEMO ──────────────────────────────────────────────────────────────────────
+function loadDemo() {
+  isDemo = true;
+  const demo = [
+    {id:'d1',name:"Lay's Classic Salted",qty:'26g',mrp:20,price:5,disc:75,img:'',category:'🍪 Snacks'},
+    {id:'d2',name:"Haldiram's Bhujia",qty:'200g',mrp:120,price:30,disc:75,img:'',category:'🍪 Snacks'},
+    {id:'d3',name:"Amul Taaza Milk",qty:'1L',mrp:68,price:68,disc:0,img:'',category:'🥛 Dairy'},
+    {id:'d4',name:"Kurkure Masala",qty:'90g',mrp:30,price:8,disc:73,img:'',category:'🍪 Snacks'},
+    {id:'d5',name:"Pringles Original",qty:'110g',mrp:220,price:55,disc:75,img:'',category:'🍪 Snacks'},
+    {id:'d6',name:"Dove Shampoo",qty:'180ml',mrp:230,price:138,disc:40,img:'',category:'🧴 Personal Care'},
+    {id:'d7',name:"Tata Salt",qty:'1kg',mrp:28,price:24,disc:14,img:'',category:'🍚 Staples'},
+    {id:'d8',name:"Tropicana Orange",qty:'1L',mrp:120,price:36,disc:70,img:'',category:'🥤 Beverages'},
+    {id:'d9',name:"Maggi Noodles",qty:'70g×4',mrp:60,price:15,disc:75,img:'',category:'🍜 Instant Food'},
+    {id:'d10',name:"Cadbury Dairy Milk",qty:'40g',mrp:50,price:50,disc:0,img:'',category:'🍫 Chocolates'},
+    {id:'d11',name:"Surf Excel Easy Wash",qty:'500g',mrp:85,price:51,disc:40,img:'',category:'🧹 Household'},
+    {id:'d12',name:"Uncle Chipps Spicy",qty:'114g',mrp:35,price:7,disc:80,img:'',category:'🍪 Snacks'},
+    {id:'d13',name:"Bikaji Khatta Meetha",qty:'400g',mrp:140,price:35,disc:75,img:'',category:'🍪 Snacks'},
+    {id:'d14',name:"Colgate MaxFresh",qty:'150g',mrp:90,price:54,disc:40,img:'',category:'🧴 Personal Care'},
+    {id:'d15',name:"Basmati Rice Premium",qty:'5kg',mrp:550,price:385,disc:30,img:'',category:'🍚 Staples'},
+    {id:'d16',name:"Pepsi Can",qty:'300ml',mrp:40,price:28,disc:30,img:'',category:'🥤 Beverages'},
+    {id:'d17',name:"Kissan Mixed Fruit Jam",qty:'500g',mrp:175,price:122,disc:30,img:'',category:'🫙 Masala'},
+    {id:'d18',name:"Kwality Walls Cornetto",qty:'90ml',mrp:70,price:70,disc:0,img:'',category:'🧊 Frozen'},
+    {id:'d19',name:"Lays Magic Masala",qty:'52g',mrp:30,price:7,disc:77,img:'',category:'🍪 Snacks'},
+    {id:'d20',name:"Head & Shoulders",qty:'180ml',mrp:220,price:132,disc:40,img:'',category:'🧴 Personal Care'},
+  ];
+  demo.forEach(p => allProducts.set(p.id, p));
+  populateCatFilter();
+  document.getElementById('filterBar').style.display = 'flex';
+  document.getElementById('exportBtn').style.display = 'inline-block';
+  renderFiltered();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function populateCatFilter() {
+  const sel = document.getElementById('catFilter');
+  sel.innerHTML = '<option value="">All categories</option>';
+  const cats = [...new Set([...allProducts.values()].map(p => p.category))].sort();
+  cats.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    sel.appendChild(o);
+  });
+}
+
+function renderFiltered() {
+  const minDisc = parseInt(document.getElementById('discSlider').value);
+  const sort = document.getElementById('sortSel').value;
+  const catFilter = document.getElementById('catFilter').value;
+
+  let products = [...allProducts.values()].filter(p => p.disc >= minDisc);
+  if (catFilter) products = products.filter(p => p.category === catFilter);
+
+  if (sort === 'disc_desc') products.sort((a,b) => b.disc - a.disc);
+  else if (sort === 'price_asc') products.sort((a,b) => a.price - b.price);
+  else if (sort === 'price_desc') products.sort((a,b) => b.price - a.price);
+  else if (sort === 'name_asc') products.sort((a,b) => a.name.localeCompare(b.name));
+
+  // Stats
+  const statsRow = document.getElementById('statsRow');
+  statsRow.style.display = 'flex';
+  const discounted = products.filter(p => p.disc > 0);
+  const over70 = products.filter(p => p.disc >= 70);
+  const maxDisc = discounted.length ? Math.max(...discounted.map(p => p.disc)) : 0;
+  statsRow.innerHTML = `
+    <div class="stat"><b>${products.length}</b>showing</div>
+    <div class="stat"><b>${allProducts.size}</b>total scanned</div>
+    <div class="stat"><b>${over70.length}</b>over 70% off</div>
+    <div class="stat"><b>${maxDisc}%</b>max discount${isDemo ? ' <span class="badge-demo">DEMO</span>' : ''}</div>
+  `;
+
+  const grid = document.getElementById('results');
+  if (!products.length) {
+    grid.innerHTML = '<div class="empty">No products match this filter.<br>Lower the discount slider.</div>';
+    return;
+  }
+
+  grid.innerHTML = products.map(p => {
+    const badgeClass = p.disc >= 70 ? 'badge badge-red' : p.disc >= 40 ? 'badge badge-orange' : 'badge badge-green';
+    const imgEl = p.img
+      ? `<img class="card-img" src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+        + `<div class="card-img-ph" style="display:none">📦</div>`
+      : `<div class="card-img-ph">📦</div>`;
+    return `<div class="card">
+      ${imgEl}
+      <div class="card-cat">${p.category}</div>
+      <div class="card-name">${p.name}</div>
+      <div class="card-qty">${p.qty}</div>
+      <div class="price-row">
+        <span class="price-now">₹${p.price}</span>
+        ${p.mrp > p.price ? `<span class="price-mrp">₹${p.mrp}</span>` : ''}
+        ${p.disc > 0 ? `<span class="${badgeClass}">${p.disc}% off</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportCsv() {
+  const rows = [['Name','Category','Qty','MRP','Price','Discount%']];
+  [...allProducts.values()]
+    .sort((a,b) => b.disc - a.disc)
+    .forEach(p => rows.push([`"${p.name}"`, p.category, p.qty, p.mrp, p.price, p.disc]));
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = `instamart-deals-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+initCategories();
+</script>
+</body>
+</html>
